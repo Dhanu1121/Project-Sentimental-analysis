@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Sentimental Analysis</title>
+</head>
+<body>
+    <h1>Sentimental Analysis</h1>
+    <form method="post" action="">
+        <label for="text">Enter Text:</label>
+        <textarea id="text" name="text" rows="6" cols="100" required></textarea>
+        <br>
+        <button type="submit">Analyze</button>
+
+    </form>
+    {% if text %}
+        <div class="result">
+            <h2>Analysis Result:</h2>
+            <p>Text: {{text}}</p>
+            <p>Positive Score: {{result['positive']}}</p>
+            <p>Negative Score: {{result['negative']}}</p>
+            <p>Neutral Score: {{result['neutral']}}</p>
+            <p>Overall Sentiment: {{result['overall_sentiment']}}</p>
+            <p>Sentiment Label: {{result['sentiment_label']}}</p>
+        </div>
+    {% endif %}
+</body>
+</html>

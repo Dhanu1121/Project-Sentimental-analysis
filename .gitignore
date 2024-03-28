@@ -7,4 +7,5 @@ sentiment_model1.h5
 model.pkl
 reviews.csv
 reviews1.csv
-sentiment_model.h5
+SentimentalAnalysisApp/model/sentiment_model.h5
+SentimentalAnalysisMLModel/sentiment_model.h5

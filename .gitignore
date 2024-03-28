@@ -5,3 +5,6 @@ training.1600000.processed.noemoticon.csv
 twitter_dataset.csv
 sentiment_model1.h5
 model.pkl
+reviews.csv
+reviews1.csv
+sentiment_model.h5

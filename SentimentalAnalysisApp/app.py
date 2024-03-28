@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import text_to_word_sequence
@@ -15,7 +15,7 @@ model = load_model(modelpath)
 # Load tokenizer
 tokenizer = Tokenizer()
 # Load the Twitter data
-twitter_data = pd.read_csv('./preprocessed_twitter_data.csv')['tweet'].tolist()
+twitter_data = pd.read_csv('D:\Final Year Project\Project(latest)\SentimentalAnalysisMLModel\preprocessed_twitter_data.csv')['tweet'].tolist()
 
 # Ensure all elements are strings
 twitter_data = [str(tweet) for tweet in twitter_data]
@@ -24,18 +24,7 @@ twitter_data = [str(tweet) for tweet in twitter_data]
 tokenizer.fit_on_texts(twitter_data)
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/', methods=['POST'])
-def predict():
-    text = request.form['text']
-    
-    # Convert text to string if it's not already a string
-    if not isinstance(text, str):
-        text = str(text)
-    
+def predict_sentiment(text):
     # Preprocess the input text
     sequence = text_to_word_sequence(text)
     sequence = tokenizer.texts_to_sequences([sequence])
@@ -43,12 +32,36 @@ def predict():
 
     # Make prediction
     prediction = model.predict(padded_sequence)
-    print(prediction.argmax())
-    sentiment = ['Negative', 'Positive','Neutral'][prediction.argmax()]
+    sentiment = ['Negative', 'Positive', 'Neutral'][prediction.argmax()]
     
-    print(sentiment)
-    
+    return sentiment
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+@app.route('/predict_text', methods=['POST'])
+def predict_text():
+    text = request.form['text']
+    sentiment = predict_sentiment(text)
     return render_template('index.html', prediction=sentiment)
+
+
+@app.route('/predict_csv', methods=['POST'])
+def predict_csv():
+    file = request.files['file']
+    if file:
+        df = pd.read_csv(file)
+        sentiments = [predict_sentiment(text) for text in df['review']]
+        positive_count = sentiments.count('Positive')
+        negative_count = sentiments.count('Negative')
+        neutral_count = sentiments.count('Neutral')
+        return render_template('csv_result.html', positive_count=positive_count, negative_count=negative_count, neutral_count=neutral_count)
+    else:
+        return redirect(url_for('index'))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

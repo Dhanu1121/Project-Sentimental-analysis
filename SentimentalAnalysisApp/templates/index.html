@@ -4,72 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top: 50px;
-        }
-        h1 {
-            color: #333;
-        }
-        p {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 10px;
-            color: #666;
-        }
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .result {
-            margin-top: 20px;
-        }
-    </style>
     <title>Sentiment Analysis</title>
 </head>
 <body>
     <div class="container">
         <h1>Sentiment Analysis</h1>
         <p>Understand the sentiment of your text! Enter your text below and click "Analyze" to see the sentiment analysis result.</p>
-        <form method="post" action="/">
+        <form method="post" action="/predict_text">
             <label for="text">Enter Text:</label>
             <textarea id="text" name="text" rows="6" cols="100" required>{{ request.form.text if request else '' }}</textarea>
             <br>
             <button type="submit">Analyze</button>
         </form>
+        <br>
         {% if prediction == "Negative" %}
         <div class="result" style="color: red;"> 
             <h2>Analysis Result: {{ prediction }}</h2>
@@ -89,7 +36,16 @@
         </div>
 
         {% endif %}
-
+        <h1>Upload CSV File</h1>
+        <p>Upload a CSV file and click "Analyze CSV" to see the sentiment analysis result for the file.</p>
+        <form method="post" action="/predict_csv" enctype="multipart/form-data">
+            <div class="file-input-container">
+                <label for="file">Upload CSV File:</label>
+                <input type="file" id="file" name="file" accept=".csv">
+            </div>
+            <br>
+            <button type="submit">Analyze CSV</button>
+        </form>
     </div>
 </body>
 </html>

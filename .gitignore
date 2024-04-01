@@ -9,3 +9,6 @@ reviews.csv
 reviews1.csv
 SentimentalAnalysisApp/model/sentiment_model.h5
 SentimentalAnalysisMLModel/sentiment_model.h5
+*.h5
+*.pkl
+*.csv

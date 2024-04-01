@@ -9,14 +9,17 @@
 <body>
     <div class="container">
         <h1>Sentiment Analysis</h1>
-        <p>Understand the sentiment of your text! Enter your text below and click "Analyze" to see the sentiment analysis result.</p>
+        <p>Understand the sentiment of your text! Enter your text below and click "Analyze Text" to see the sentiment analysis result.</p>
         <form method="post" action="/predict_text">
             <label for="text">Enter Text:</label>
             <textarea id="text" name="text" rows="6" cols="100" required>{{ request.form.text if request else '' }}</textarea>
             <br>
-            <button type="submit">Analyze</button>
+            <button type="submit">Analyze Text</button>
         </form>
         <br>
+        Positive: {{ positive_percentage }}%
+        Negative: {{ negative_percentage }}%
+        Neutral: {{ neutral_percentage }}%
         {% if prediction == "Negative" %}
         <div class="result" style="color: red;"> 
             <h2>Analysis Result: {{ prediction }}</h2>

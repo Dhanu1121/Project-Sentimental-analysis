@@ -7,7 +7,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-modelpath = './model/sentiment_model.h5'
+modelpath = './model/modelfinal.h5'
 
 # Load ML model
 model = load_model(modelpath)
@@ -24,7 +24,7 @@ twitter_data = [str(tweet) for tweet in twitter_data]
 tokenizer.fit_on_texts(twitter_data)
 
 
-def predict_sentiment(text):
+def predict_sentiment_csv(text):
     # Preprocess the input text
     sequence = text_to_word_sequence(text)
     sequence = tokenizer.texts_to_sequences([sequence])
@@ -36,6 +36,34 @@ def predict_sentiment(text):
     
     return sentiment
 
+def predict_sentiment_text(text):
+    # Preprocess the input text
+    sequence = text_to_word_sequence(text)
+    sequence = tokenizer.texts_to_sequences([sequence])
+    padded_sequence = pad_sequences(sequence, maxlen=100)
+
+    # Make prediction
+    prediction = model.predict(padded_sequence)[0]  # Take the first prediction from the batch
+    positive_prob = prediction[1]  # Probability of being positive
+    negative_prob = prediction[0]  # Probability of being negative
+    neutral_prob = prediction[2]   # Probability of being neutral
+
+    # Calculate percentages
+    total = positive_prob + negative_prob + neutral_prob
+    positive_percentage = (positive_prob / total) * 100
+    negative_percentage = (negative_prob / total) * 100
+    neutral_percentage = (neutral_prob / total) * 100
+
+    positive_percentage = "{:.2f}".format(positive_percentage)
+    negative_percentage = "{:.2f}".format(negative_percentage)
+    neutral_percentage = "{:.2f}".format(neutral_percentage)
+
+    # Determine sentiment
+    sentiment = ['Negative', 'Positive', 'Neutral'][prediction.argmax()]
+    
+    return sentiment, positive_percentage, negative_percentage, neutral_percentage
+
+
 
 @app.route('/')
 def index():
@@ -45,8 +73,8 @@ def index():
 @app.route('/predict_text', methods=['POST'])
 def predict_text():
     text = request.form['text']
-    sentiment = predict_sentiment(text)
-    return render_template('index.html', prediction=sentiment)
+    sentiment, positive_percentage, negative_percentage, neutral_percentage = predict_sentiment_text(text)
+    return render_template('index.html', prediction=sentiment, positive_percentage=positive_percentage, negative_percentage=negative_percentage, neutral_percentage=neutral_percentage)
 
 
 @app.route('/predict_csv', methods=['POST'])
@@ -54,7 +82,7 @@ def predict_csv():
     file = request.files['file']
     if file:
         df = pd.read_csv(file)
-        sentiments = [predict_sentiment(text) for text in df['review']]
+        sentiments = [predict_sentiment_csv(text) for text in df['review']]
         positive_count = sentiments.count('Positive')
         negative_count = sentiments.count('Negative')
         neutral_count = sentiments.count('Neutral')

@@ -7,7 +7,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-modelpath = './model/modelfinal.h5'
+modelpath = './model/sentiment_model.h5'
 
 # Load ML model
 model = load_model(modelpath)

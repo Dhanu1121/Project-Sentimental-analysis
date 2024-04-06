@@ -4,10 +4,15 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import text_to_word_sequence
 from tensorflow.keras.preprocessing.text import Tokenizer
 import pandas as pd
+import re
+from bs4 import BeautifulSoup
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
 
 app = Flask(__name__)
 
-modelpath = './model/sentiment_model.h5'
+modelpath = './model/modelfinal1.h5'
 
 # Load ML model
 model = load_model(modelpath)
@@ -23,9 +28,31 @@ twitter_data = [str(tweet) for tweet in twitter_data]
 # Fit tokenizer on the preprocessed Twitter data
 tokenizer.fit_on_texts(twitter_data)
 
+def preprocess_text(text):
+    # Remove HTML tags
+    text = BeautifulSoup(text, 'html.parser').get_text()
+
+    # Remove noisy text
+    text = re.sub(r'@[A-Za-z0-9]+', '', text)  # Remove mentions
+    text = re.sub(r'https?://[A-Za-z0-9./]+', '', text)  # Remove URLs
+    text = re.sub(r'[^a-zA-Z]', ' ', text)  # Remove non-alphabetic characters
+
+    # Tokenization
+    tokens = word_tokenize(text)
+
+    # Remove stopwords
+    stop_words = set(stopwords.words('english'))
+    tokens = [token for token in tokens if token.lower() not in stop_words]
+
+    # Stemming
+    stemmer = PorterStemmer()
+    tokens = [stemmer.stem(token) for token in tokens]
+
+    return ' '.join(tokens)
 
 def predict_sentiment_csv(text):
     # Preprocess the input text
+    text = preprocess_text(text)
     sequence = text_to_word_sequence(text)
     sequence = tokenizer.texts_to_sequences([sequence])
     padded_sequence = pad_sequences(sequence, maxlen=100)
@@ -38,6 +65,7 @@ def predict_sentiment_csv(text):
 
 def predict_sentiment_text(text):
     # Preprocess the input text
+    text = preprocess_text(text)
     sequence = text_to_word_sequence(text)
     sequence = tokenizer.texts_to_sequences([sequence])
     padded_sequence = pad_sequences(sequence, maxlen=100)
@@ -63,19 +91,17 @@ def predict_sentiment_text(text):
     
     return sentiment, positive_percentage, negative_percentage, neutral_percentage
 
-
+# Routes
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 @app.route('/predict_text', methods=['POST'])
 def predict_text():
     text = request.form['text']
     sentiment, positive_percentage, negative_percentage, neutral_percentage = predict_sentiment_text(text)
     return render_template('index.html', prediction=sentiment, positive_percentage=positive_percentage, negative_percentage=negative_percentage, neutral_percentage=neutral_percentage)
-
 
 @app.route('/predict_csv', methods=['POST'])
 def predict_csv():
@@ -89,7 +115,6 @@ def predict_csv():
         return render_template('csv_result.html', positive_count=positive_count, negative_count=negative_count, neutral_count=neutral_count)
     else:
         return redirect(url_for('index'))
-
 
 if __name__ == "__main__":
     app.run(debug=True)

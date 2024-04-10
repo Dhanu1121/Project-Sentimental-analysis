@@ -12,7 +12,7 @@ from nltk.tokenize import word_tokenize
 
 app = Flask(__name__)
 
-modelpath = './model/modelfinal1.h5'
+modelpath = './model/model2.h5'
 
 # Load ML model
 model = load_model(modelpath)

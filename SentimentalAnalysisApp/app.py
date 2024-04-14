@@ -1,61 +1,45 @@
 from flask import Flask, render_template, request, redirect, url_for
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.preprocessing.text import text_to_word_sequence
 from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.text import text_to_word_sequence
 import pandas as pd
-import re
 from bs4 import BeautifulSoup
 from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import TweetTokenizer
+import re
+import pickle
 
 app = Flask(__name__)
 
-modelpath = './model/model2.h5'
+modelpath = './model/best_modelLSTM1.h5'
 
 # Load ML model
 model = load_model(modelpath)
 
 # Load tokenizer
-tokenizer = Tokenizer()
-# Load the Twitter data
-twitter_data = pd.read_csv('D:\Final Year Project\Project(latest)\SentimentalAnalysisMLModel\preprocessed_twitter_data.csv')['tweet'].tolist()
-
-# Ensure all elements are strings
-twitter_data = [str(tweet) for tweet in twitter_data]
-
-# Fit tokenizer on the preprocessed Twitter data
-tokenizer.fit_on_texts(twitter_data)
+with open('tokenizer.pkl', 'rb') as f:
+    tokenizer = pickle.load(f)
 
 def preprocess_text(text):
     # Remove HTML tags
     text = BeautifulSoup(text, 'html.parser').get_text()
 
-    # Remove noisy text
-    text = re.sub(r'@[A-Za-z0-9]+', '', text)  # Remove mentions
-    text = re.sub(r'https?://[A-Za-z0-9./]+', '', text)  # Remove URLs
-    text = re.sub(r'[^a-zA-Z]', ' ', text)  # Remove non-alphabetic characters
-
-    # Tokenization
-    tokens = word_tokenize(text)
+    # Tokenization using TweetTokenizer
+    tokenizer = TweetTokenizer()
+    tokens = tokenizer.tokenize(text)
 
     # Remove stopwords
     stop_words = set(stopwords.words('english'))
-    tokens = [token for token in tokens if token.lower() not in stop_words]
-
-    # Stemming
-    stemmer = PorterStemmer()
-    tokens = [stemmer.stem(token) for token in tokens]
+    tokens = [token.lower() for token in tokens if token.lower() not in stop_words]
 
     return ' '.join(tokens)
 
 def predict_sentiment_csv(text):
     # Preprocess the input text
     text = preprocess_text(text)
-    sequence = text_to_word_sequence(text)
-    sequence = tokenizer.texts_to_sequences([sequence])
-    padded_sequence = pad_sequences(sequence, maxlen=100)
+    sequence = tokenizer.texts_to_sequences([text])
+    padded_sequence = pad_sequences(sequence, maxlen=200)
 
     # Make prediction
     prediction = model.predict(padded_sequence)
@@ -66,9 +50,8 @@ def predict_sentiment_csv(text):
 def predict_sentiment_text(text):
     # Preprocess the input text
     text = preprocess_text(text)
-    sequence = text_to_word_sequence(text)
-    sequence = tokenizer.texts_to_sequences([sequence])
-    padded_sequence = pad_sequences(sequence, maxlen=100)
+    sequence = tokenizer.texts_to_sequences([text])
+    padded_sequence = pad_sequences(sequence, maxlen=200)
 
     # Make prediction
     prediction = model.predict(padded_sequence)[0]  # Take the first prediction from the batch

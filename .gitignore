@@ -13,3 +13,4 @@ SentimentalAnalysisMLModel/sentiment_model.h5
 *.pkl
 *.csv
 *.keras
+*.xlsx

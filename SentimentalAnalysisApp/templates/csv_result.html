@@ -14,7 +14,7 @@
             padding: 0;
         }
         .container {
-            max-width: 800px;
+            max-width: 1300px;
             margin: 20px auto;
             background-color: #fff;
             padding: 20px;
@@ -37,17 +37,40 @@
             font-size: 18px;
             margin: 5px 0;
         }
+        .sentiment-box {
+            display: inline-block;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .positive-box {
+            background-color: rgba(75, 192, 192, 0.5);
+        }
+        .negative-box {
+            background-color: rgba(255, 99, 132, 0.5);
+        }
+        .neutral-box {
+            background-color: rgba(54, 162, 235, 0.5);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>CSV Sentiment Analysis Result</h1>
-        <canvas id="sentimentChart" width="400" height="400"></canvas>
         <div class="sentiment-info">
-            <p>Positive: {{ positive_count }}</p>
-            <p>Negative: {{ negative_count }}</p>
-            <p>Neutral: {{ neutral_count }}</p>
+            <div class="sentiment-box positive-box">
+                <p>Positive: {{ positive_count }}</p>
+            </div>
+            <div class="sentiment-box negative-box">
+                <p>Negative: {{ negative_count }}</p>
+            </div>
+            <div class="sentiment-box neutral-box">
+                <p>Neutral: {{ neutral_count }}</p>
+            </div>
+            <p>Total Sentiments: {{ positive_count + negative_count + neutral_count }}</p>
         </div>
+        <canvas id="sentimentChart" width="400" height="400"></canvas>
     </div>
 
     <script>

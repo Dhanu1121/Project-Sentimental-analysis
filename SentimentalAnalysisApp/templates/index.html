@@ -5,50 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>Sentiment Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+            text-align: center;
+        }
+        p, label {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .result-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .positive {
+            background-color: rgba(75, 192, 192, 0.5);
+        }
+        .negative {
+            background-color: rgba(255, 99, 132, 0.5);
+        }
+        .neutral {
+            background-color: rgba(54, 162, 235, 0.5);
+        }
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .file-input-container input[type=file] {
+            position: absolute;
+            font-size: 100px;
+            opacity: 0;
+            right: 0;
+            top: 0;
+        }
+        .file-input-container label {
+            background-color: #008CBA;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .file-input-container label:hover {
+            background-color: #45a049;
+        }
+        .file-name {
+            margin-left: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
+    <header class="header">
         <h1>Sentiment Analysis</h1>
-        <p>Understand the sentiment of your text! Enter your text below and click "Analyze Text" to see the sentiment analysis result.</p>
+    </header>
+    <div class="container">
+        <p>Enter your text below (max 200 words) and click "Analyze Text" to see the sentiment analysis result.</p>
         <form method="post" action="/predict_text">
             <label for="text">Enter Text:</label>
-            <textarea id="text" name="text" rows="6" cols="100" required>{{ request.form.text if request else '' }}</textarea>
-            <br>
+            <textarea id="text" name="text" rows="6" required>{{ request.form.text if request else '' }}</textarea>
+            <p class="word-count">Word Count: <span id="word-count">0</span>/200</p>
             <button type="submit">Analyze Text</button>
         </form>
-        <br>
-        Positive: {{ positive_percentage }}%
-        Negative: {{ negative_percentage }}%
-        Neutral: {{ neutral_percentage }}%
-        {% if prediction == "Negative" %}
-        <div class="result" style="color: red;"> 
-            <h2>Analysis Result: {{ prediction }}</h2>
+        <div class="result">
+            {% if prediction %}
+                <h2>Analysis Result:</h2>
+                <div class="result-row">
+                    <div class="result-box positive">
+                        <h3>Positive</h3>
+                        <p>{{ positive_percentage }}%</p>
+                    </div>
+                    <div class="result-box negative">
+                        <h3>Negative</h3>
+                        <p>{{ negative_percentage }}%</p>
+                    </div>
+                    <div class="result-box neutral">
+                        <h3>Neutral</h3>
+                        <p>{{ neutral_percentage }}%</p>
+                    </div>
+                </div>
+                <div class="result-message {{ prediction|lower }}">
+                    <h3>{{ prediction }}</h3>
+                </div>
+            {% endif %}
         </div>
-        {% endif %}
-
-        {% if prediction == "Positive" %}
-        <div class="result" style="color: green;">
-            <h2>Analysis Result: {{ prediction }}</h2>
-        </div>
-
-        {% endif %}
-
-        {% if prediction == "Neutral" %}
-        <div class="result" style="color: blue;">
-            <h2>Analysis Result: {{ prediction }}</h2>
-        </div>
-
-        {% endif %}
-        <h1>Upload CSV File</h1>
+        <h2>Upload CSV File</h2>
         <p>Upload a CSV file and click "Analyze CSV" to see the sentiment analysis result for the file.</p>
         <form method="post" action="/predict_csv" enctype="multipart/form-data">
             <div class="file-input-container">
                 <label for="file">Upload CSV File:</label>
-                <input type="file" id="file" name="file" accept=".csv">
+                <input type="file" id="file" name="file" accept=".csv" onchange="showFileName()">
+                <span id="file-name" class="file-name"></span>
             </div>
-            <br>
             <button type="submit">Analyze CSV</button>
         </form>
     </div>
+
+    <script>
+        function showFileName() {
+            var fileName = document.getElementById('file').files[0].name;
+            document.getElementById('file-name').innerText = fileName + ' uploaded!';
+        }
+
+        document.getElementById('text').addEventListener('input', function() {
+            var wordCount = this.value.trim().split(/\s+/).length;
+            document.getElementById('word-count').innerText = wordCount;
+        });
+    </script>
 </body>
 </html>
